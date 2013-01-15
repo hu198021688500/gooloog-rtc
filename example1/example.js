@@ -13,7 +13,7 @@ http.createServer(
 		var connection = mysql.createConnection({
 			host : "192.168.31.188",
 		    user : "root",
-		    password : "admin",
+		    password : "admin"
 		});
 		connection.connect();
 		connection.query("USE test");

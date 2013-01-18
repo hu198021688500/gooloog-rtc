@@ -9,8 +9,55 @@
 config = require("./config.js");
 
 var net = require("net");
+var util = require("util");
 var route = require("./core/route.js");
 var server = require("../module/server.js");
+
+
+var proxyPort = process.argv[2];
+var serviceHost = process.argv[3];
+var servicePort = process.argv[4];
+
+net.createServer(function(proxySocket) {
+	var connected = false;
+	var buffers = new Array();
+	var serviceSocket = new net.Socket();
+	serviceSocket.connect(parseInt(servicePort), config, function() {
+				connected = true;
+				if (buffers.length > 0) {
+					for (i = 0; i < buffers.length; i++) {
+						console.log(buffers[i]);
+						serviceSocket.write(buffers[i]);
+					}
+				}
+			});
+	proxySocket.on("error", function(e) {
+				serviceSocket.end();
+			});
+	serviceSocket.on("error", function(e) {
+				console.log("Could not connect to service at host "
+						+ serviceHost + ", port " + servicePort);
+				proxySocket.end();
+			});
+	proxySocket.on("data", function(data) {
+				if (connected) {
+					serviceSocket.write(data);
+				} else {
+					buffers[buffers.length] = data;
+				}
+			});
+	serviceSocket.on("data", function(data) {
+				proxySocket.write(data);
+			});
+	proxySocket.on("close", function(had_error) {
+				serviceSocket.end();
+			});
+	serviceSocket.on("close", function(had_error) {
+				proxySocket.end();
+			});
+}).listen(condif.listenPort);
+
+
 
 net.createServer(function(socket) {
 	socket.on("connect", function() {

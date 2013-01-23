@@ -20,6 +20,5 @@ exports.decodeUID = function(uid) {
 	} else {
 		user.domain = uid.substring(pos1 + 1);
 	}
-	console.log(user);
 	return user;
 };

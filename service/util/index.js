@@ -1,0 +1,1 @@
+module.exports.String = require('./lib/string.js');

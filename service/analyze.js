@@ -6,7 +6,7 @@ var cmds = {
 };
 
 var util = require("util");
-var serviceStr = './service/%s.js';
+var serviceStr = '../service/%s.js';
 
 exports.process = function(socket, data, callback) {
 	var object = JSON.parse(data);

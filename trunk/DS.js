@@ -3,23 +3,24 @@
  */
 
 var net = require('net');
-var config = require('./config/config.js');
 var analyze = require('./service/analyze.js');
 
-net.createServer(function(socket) {
-	var address = socket.remoteAddress;
-	var port = socket.remotePort;
-	
-    console.log('CONNECTED: ' + address + ':' + port);
+var config = require('./config/config.js');
+var listenAddress = config.DS.address;
+var listenPort = config.DS.port;
 
+net.createServer(function(socket) {
+	var server = listenAddress + ':' + listenPort;
+	var client = socket.remoteAddress + ':' + socket.remotePort;
+	console.log('client[' + client + '] connect DS[' +  server + '] opened');
     socket.on('data', function(data) {
-    	analyze.process(socket, data, function(result){
+    	console.log('client[' + client + '] send DS[' +  server + '] data:' + data);
+    	var object = JSON.parse(data);
+    	analyze.process(socket, object, function(result) {
     		socket.write(result);
     	});
     });
-
     socket.on('close', function(data) {
-        console.log('CLOSED: ' + address + ':' + port);
+        console.log('client[' + client + '] connect DS[' +  server + '] closed');
     });
-
-}).listen(config.DS.port, config.DS.address);
+}).listen(listenPort, listenAddress);

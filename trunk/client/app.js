@@ -1,10 +1,11 @@
 var net = require('net');
 
+var config = require('../config/config.js');
+
 function connectDS() {
 	var client = new net.Socket();
-	client.connect(8086, '192.168.31.188', function() {
-		console.log('CONNECTED TO:192.168.31.188:8086');
-		// 建立连接后立即向服务器发送数据，服务器将收到这些数据
+	client.connect(config.DS.port, config.DS.address, function() {
+		console.log("connect DS");
 		var data = {
 			cmd : 1,
 			data : {
@@ -19,29 +20,41 @@ function connectDS() {
 	client.on('data', function(data) {
 		var object = JSON.parse(data);
 		connectNS(object);
-		// 完全关闭连接
 		client.destroy();
 	});
 	// 为客户端添加“close”事件处理函数
 	client.on('close', function() {
-		console.log('Connection closed');
+		console.log('Connection DS closed');
 	});
 }
 
 function connectNS(data) {
 	var client = new net.Socket();
 	client.connect(data.port, data.address, function() {
-		var data = {
+		console.log("connect NS");
+		var sendData = {
 			token : data.token,
 			data : {
 				msg : 'hello NS'
 			}
 		};
-		client.write(JSON.stringify(data));
+		client.write(JSON.stringify(sendData));
 	});
 	client.on('data', function(data) {
 		var object = JSON.parse(data);
 		console.log(object.data.msg);
-		client.destroy();
+		console.log("connect NS closed");
 	});
+	
+	setTimeout(function() {
+		var data = {
+			cmd : 2,
+			data : {
+				uid : 'huguobing1@gooloog.com/web'
+			}
+		};
+		client.write(JSON.stringify(sendData));
+	}, 5000);
 }
+
+connectDS();

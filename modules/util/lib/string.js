@@ -1,6 +1,14 @@
 /**
  * 
+ */
+
+var fs = require('fs');
+var util = require('util');
+
+/**
+ * 
  * @param {String} uid huguobing@gooloog.com/web
+ * @return {Bool}
  */
 exports.decodeUID = function(uid) {
 	var user = {
@@ -21,4 +29,19 @@ exports.decodeUID = function(uid) {
 		user.domain = uid.substring(pos1 + 1);
 	}
 	return user;
+};
+
+/**
+ * 
+ * @param {String} file
+ * @param {Object} json
+ */
+exports.writeJSON = function(file, json){
+	var str = util.inspect(json);
+	var buffer = new Buffer(str, 'utf8');
+	fs.writeFile(file, buffer, function(err) {
+		if (err) {
+			console.log(err);
+		}
+	});
 };

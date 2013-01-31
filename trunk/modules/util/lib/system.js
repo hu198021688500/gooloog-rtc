@@ -4,6 +4,7 @@
 
 var os=require('os');
 var util = require('util');
+var computecluster = require('compute-cluster');
 
 exports.localIps = function() {
 	var ifaces = os.networkInterfaces();
@@ -38,5 +39,23 @@ exports.run = function(app, server) {
 		starter.localrun(cmd);
 	} else {
 		starter.sshrun(cmd, server.host);
+	}
+};
+
+exports.exeCompute = function(file) {
+	var cc = new computecluster({
+		module : './test.js',
+		max_backlog : -1
+	});
+	var toRun = 10;
+	for (var i = 0; i < toRun; i++) {
+		cc.enqueue({}, function(err, r) {
+			if (err)
+				console.log("an error occured:", err);
+			else
+				console.log("it's nice:", r);
+			if (--toRun === 0)
+				cc.exit();
+		});
 	}
 };

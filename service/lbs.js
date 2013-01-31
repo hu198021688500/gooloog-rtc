@@ -3,7 +3,7 @@
  */
 
 var util = require('util');
-var geohash = require('../node_modules/geohash');
+var geohash = require('../modules/geohash');
 
 var redisKeysFormat = {
 	user : 'u:h:%s'

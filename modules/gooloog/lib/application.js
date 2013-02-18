@@ -2,6 +2,7 @@
  * New node file
  */
 
+var process = require('process');
 var logger = require('log4js').getLogger(__filename);
 
 /**

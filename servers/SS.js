@@ -1,13 +1,24 @@
 /**
- * 网关服务器
+ * 交换服务器(SwitchboardServer)
+ * node SS.js 127.0.0.1 8000
  */
 
-var io = require('socket.io').listen(80);
+var logger = require('log4js').getLogger(__filename);
+var systemUtil = require('../../../modules/util').System;
 
-// 认证与握手
+var argv = process.argv;
+if (!systemUtil.checkIsLocalIp(argv[2])) {
+	logger.error(opts.ip + 'is not local ip.');
+	return false;
+}
+var sio = require('socket.io').listen(argv[3]);
+
+require('./lib/chat.js').createChat(io.sockets);
+
 io.configure(function() {
 	io.set('authorization', function(handshakeData, callback) {
 		var pass = true;
+		handshake.nickname = 'Guest' + counter++;
 		if (pass) {
 			callback(null, true); // error first callback style
 		} else {
@@ -15,9 +26,9 @@ io.configure(function() {
 		}
 	});
 });
-
-io.sockets.on('connection', function(socket) {
+io.of('/chatSS').sockets.on('connection', function(socket) {
 	console.log('>>>>>>>connected');
+	var nickname = socket.handshake[chat.settings['handshake nickname property']];
 	// 广播
     socket.broadcast.emit('hello', socket.id + '广播的信息');
     
@@ -47,30 +58,11 @@ io.sockets.on('connection', function(socket) {
 	});
 });
 
-// socket.io路由或者命名空间
-/*
- * var chat = io.connect('http://localhost/chat')
- * , news = io.connect('http://localhost/news');
- * 	chat.on('connect', function () {
- * 		chat.emit('hi!');
- * 	});
- * 	news.on('news', function () {
- * 		news.emit('woot');
- * 	});
- */
-var chat = io.of('/chat').on('connection', function(socket) {
-	socket.emit('a message', {
-		that : 'only',
-		'/chat' : 'will get'
-	});
-	chat.emit('a message', {
-		everyone : 'in',
-		'/chat' : 'will get'
-	});
-});
+SwitchboardServer.stop = function(opts) {
+	
+};
+var io = require('socket.io').listen(80);
 
-var news = io.of('/news').on('connection', function(socket) {
-	socket.emit('item', {
-		news : 'item'
-	});
-});
+
+
+

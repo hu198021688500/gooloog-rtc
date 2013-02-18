@@ -2,13 +2,24 @@
  * New node file
  */
 
-var os=require('os');
-var util = require('util');
-var computecluster = require('compute-cluster');
+var os = require('os');
+var process = require('process');
 
+/**
+ * 返回进程的当前工作目录
+ * @return {String}
+ */
+exports.getBase = function() {
+	return process.cwd();
+};
+
+/**
+ * 获取本机所有IP
+ * @return {Array}
+ */
 exports.localIps = function() {
-	var ifaces = os.networkInterfaces();
 	var ips = [];
+	var ifaces = os.networkInterfaces();
 	for (var dev in ifaces) {
 		ifaces[dev].forEach(function(details) {
 			if (details.family === 'IPv4') {
@@ -19,6 +30,25 @@ exports.localIps = function() {
 	return ips;
 };
 
+/**
+ * 检查IP是否是本机IP
+ * @param {String} ip
+ * @return {Bool}
+ */
+exports.checkIsLocalIp = function(ip) {
+	var isLocalIp = false;
+	var localIps = exports.localIps();
+	for (var key in localIps) {
+		if (localIps[key] == ip) {
+			isLocalIp = true;
+			break;
+		}
+	}
+	return isLocalIp;
+};
+/*
+var util = require('util');
+var computecluster = require('compute-cluster');
 exports.runServers = function(app) {
 	var servers = app.getServers();
 	for (var serverId in servers) {
@@ -58,4 +88,4 @@ exports.exeCompute = function(file) {
 				cc.exit();
 		});
 	}
-};
+};*/

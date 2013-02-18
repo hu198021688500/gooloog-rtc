@@ -28,3 +28,18 @@ server.on('error', function(error) {
 server.listen(8088, function() {
 	console.log('server listen on 8088');
 });*/
+
+var io = require('socket.io-client'),
+socket = io.connect('192.168.31.188', {
+    port: 8005
+});
+socket.on('connect', function() {
+	console.log("socket connected");
+	socket.on('event', function(data) {
+		
+	});
+	socket.on('disconnect', function() {
+	
+	});
+});
+//socket.emit('private message', { user: 'me', msg: 'whazzzup?' });

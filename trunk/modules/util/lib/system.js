@@ -3,7 +3,6 @@
  */
 
 var os = require('os');
-var process = require('process');
 
 /**
  * 返回进程的当前工作目录

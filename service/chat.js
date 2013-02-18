@@ -10,58 +10,44 @@ function disconnect(socket) {
 		return socket.disconnect();
 	}
 	socket.packet({
-				type : 'disconnect'
-			});
+		type : 'disconnect'
+	});
 	socket.manager.onLeave(socket, socket.namespace.name);
-	socket.$emit('disconnect', 'booted');
+	socket.emit('disconnect', 'booted');
 }
 
 /**
- * 
- * @param {String} namespace sio
- * @param {Object} options
+ * 聊天
+ * @param {String} namespace [socket.io].sockets
  */
-function Chat(namespace, options) {
-	options = options || {};
+function Chat(namespace) {
+	var chat = this;
+	this.settings = {};
 	this.namespace = namespace;
-	this.settings = {
-		lobby : '',
-		'channel join permission' : true,
-		'handshake nickname property' : 'nickname'
-	};
-
-	for (var key in options) {
-		this.settings[key] = options[key];
-	}
 
 	function onWhisper(target, message, ack) {
-		this.get('nickname', function(err, nickname) {
-					if (err || !nickname) {
-						return ack && ack('Internal error');
-					}
-
-					if (namespace.clients(userPrefix + target).length) {
-						namespace.to(userPrefix + target).emit('whisper',
-								nickname, message);
-					} else {
-						ack && ack('Unknown user');
-					}
-				});
+		this.get('uid', function(err, uid) {
+			if (err || !uid) {
+				return ack && ack('Internal error');
+			}
+			if (namespace.clients(userPrefix + target).length) {
+				namespace.to(userPrefix + target).emit('whisper', nickname, message);
+			} else {
+				ack && ack('Unknown user');
+			}
+		});
 	}
-
-	var chat = this;
 
 	function onSay(message) {
 		var socket = this;
-
 		first(function() {
-					socket.get('nickname', this);
-				}).whilst(function() {
-					socket.get('channel', this);
-				}).then(function(nick, chan) {
-			if (nick[0] || chan[0] || !nick[1])
+			socket.get('nickname', this);
+		}).whilst(function() {
+			socket.get('channel', this);
+		}).then(function(nick, chan) {
+			if (nick[0] || chan[0] || !nick[1]) {
 				return;
-
+			}
 			namespace.to(channelPrefix + chan[1]).emit('say', nick[1], message);
 		});
 	}
@@ -117,7 +103,7 @@ function Chat(namespace, options) {
 		});
 
 	}
-
+	// 离线
 	function onLeave(ack) {
 		var socket = this;
 
@@ -151,39 +137,36 @@ function Chat(namespace, options) {
 
 	}
 
+	// 连接
 	namespace.on('connection', function(socket) {
-		var nickname = socket.handshake[chat.settings['handshake nickname property']];
-
-		// we cannot handle clients without nicknames
-		if (!nickname) {
-			socket.log.warn('no nickname given for client', socket.id);
+		var uid = socket.handshake['uid'];
+		if (!uid) {
+			socket.log.warn('no uid given for client', socket.id);
 			return disconnect(socket);
 		}
-
-		socket.join(userPrefix + nickname);
+		socket.join(userPrefix + uid);
 
 		socket.on('whisper', onWhisper);
 		socket.on('say', onSay);
 		socket.on('join', onChannelJoin);
 		socket.on('leave', onLeave);
-
-		socket.set('nickname', nickname, function(err) {
+		// 在socket session中存储uid
+		socket.set('uid', uid, function(err) {
+			if (err) {
+				socket.send('Can\'t set uid');
+				socket.log.warn('error setting uid', uid, 'with', err, 'for client', socket.id);
+				disconnect(socket);
+				return;
+			} else {
+				// join lobby
+				onLeave.call(socket, function(err) {
 					if (err) {
-						socket.send('Can\'t set nickname');
-						socket.log.warn('error setting nickname', nickname,
-								'with', err, 'for client', socket.id);
-						disconnect(socket);
 						return;
-					} else {
-						// join lobby
-						onLeave.call(socket, function(err) {
-									if (err) {
-										return;
-									}
-									chat.emit('connection', nickname);
-								});
 					}
+					chat.emit('connection', uid);
 				});
+			}
+		});
 
 	});
 }
@@ -194,34 +177,66 @@ Chat.createChat = function(sio, options) {
 
 Chat.prototype.__proto__ = EventEmitter.prototype;
 
-Chat.prototype.kick = function(nickname) {
-	this.user(nickname).forEach(function(v) {
-				disconnect(v);
-			});
+/**
+ * 剔除用户
+ * @param {Number} uid
+ * @return {Object}
+ */
+Chat.prototype.kick = function(uid) {
+	this.user(uid).forEach(function(v) {
+		disconnect(v);
+	});
 	return this;
 };
 
-Chat.prototype.sendChannel = function(channel, message) {
-	this.namespace.to(channelPrefix + channel).send(message);
-	return this;
-};
-
+/**
+ * 发送系统消息
+ * @param {String} message
+ * @return {Object}
+ */
 Chat.prototype.sendSystem = function(message) {
 	this.namespace.send(message);
 	return this;
 };
 
-Chat.prototype.sendUser = function(nickname, message) {
-	this.namespace.to(userPrefix + nickname).send(message);
+/**
+ * 获取指定用户客户端
+ * @param {Number} uid
+ * @return {Object}
+ */
+Chat.prototype.user = function(uid) {
+	return this.namespace.clients(userPrefix + uid);
+};
+
+/**
+ * 给单个用户发送消息
+ * @param {Number} uid
+ * @param {String} message
+ * @return {Object}
+ */
+Chat.prototype.sendUser = function(uid, message) {
+	this.namespace.to(userPrefix + uid).send(message);
 	return this;
 };
 
-Chat.prototype.user = function(nickname) {
-	return this.namespace.clients(userPrefix + nickname);
-};
-
+/**
+ * 获取指定的频道
+ * @param {Nuber}
+ * @return {Object}
+ */
 Chat.prototype.channel = function(channel) {
 	return this.namespace.clients(channelPrefix + channel);
+};
+
+/**
+ * 给频道内的所有人发送消息
+ * @param {String} channelId
+ * @param {String} message
+ * @return {Object}
+ */
+Chat.prototype.sendChannel = function(channelId, message) {
+	this.namespace.to(channelPrefix + channelId).send(message);
+	return this;
 };
 
 Chat.prototype.set = function(key, value) {

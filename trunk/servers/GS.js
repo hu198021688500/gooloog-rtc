@@ -1,5 +1,5 @@
 /**
- * 网关服务器
+ * 网关服务器(Gateway Server)
  */
 
 var GatewayServer = module.exports = {};

@@ -1,5 +1,5 @@
 /**
- * 交换服务器(SwitchboardServer)
+ * 交换服务器(Switchboard Server)
  * node SS.js 127.0.0.1 8000
  */
 

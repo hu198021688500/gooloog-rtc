@@ -1,5 +1,5 @@
 /**
- * 通知服务器
+ * 通知服务器(Notification Server)
  */
 
 var net = require('net');

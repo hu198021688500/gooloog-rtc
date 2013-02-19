@@ -4,18 +4,18 @@
  * 管理监控各个服务器，维护一个服务器IP表
  */
 
-var net = require('net');
+var net = require("net");
 
-var config = require('./config/config.js');
+var config = require("../config/config.js");
 var listenAddress = config.MS.address;
 var listenPort = config.MS.port;
 
 net.createServer(function(socket) {
-	var server = listenAddress + ':' + listenPort;
-	var client = socket.remoteAddress + ':' + socket.remotePort;
-	console.log('client[' + client + '] connect MS[' +  server + '] opened');
-	socket.on('data', function(data) {
-		console.log('client[' + client + '] send MS[' +  server + '] data:' + data);
+	var server = listenAddress + ":" + listenPort;
+	var client = socket.remoteAddress + ":" + socket.remotePort;
+	console.log("client[" + client + "] connect MS[" +  server + "] opened");
+	socket.on("data", function(data) {
+		console.log("client[" + client + "] send MS[" +  server + "] data:" + data);
 		var result = null;
 		var object = JSON.parse(data);
 		switch (object.cmd) {
@@ -36,8 +36,8 @@ net.createServer(function(socket) {
 		}
 		socket.write(JSON.stringify(result));
 	});
-	socket.on('close', function(data) {
-        console.log('client[' + client + '] connect MS[' +  server + '] closed');
+	socket.on("close", function(data) {
+        console.log("client[" + client + "] connect MS[" +  server + "] closed");
     });
 }).listen(listenPort, listenAddress);
 

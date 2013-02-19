@@ -1,9 +1,9 @@
 /**
  * 交换服务器(Switchboard Server)
- * node SS.js 127.0.0.1 8000
+ * node SS.js 127.0.0.1 8003
  */
 
-var auth = require("../service/auth.js");
+var string = require("../modules/util").String;
 var logger = require("log4js").getLogger(__filename);
 var systemUtil = require("../modules/util/lib/system.js");
 
@@ -15,19 +15,33 @@ if (!systemUtil.checkIsLocalIp(argv[2])) {
 
 var sio = require("socket.io").listen(parseInt(argv[3]), {"log level" : 0});
 
-sio.configure(function() {
-	sio.set("authorization", function(handshakeData, callback) {
-		callback(null, true);
-		auth.getDataByIP(handshakeData.address.address, function(err, data) {
-			if (err) {
-				return callback("need login", false);
+var sidMap = {};
+var index = 1;
+
+sio.of("/P2P").on("connection", function(socket) {
+	sidMap["huguobing" + index + "@gooloog.com"] = socket.id;
+	index++;
+	console.log(sidMap);
+	socket.on("send_msg", function(data) {
+		var user = string.decodeUID(data.GID);
+		var sid = sidMap[user.username + "@" + user.domain];
+		console.log("server send from " + socket.id);
+		console.log("server send to " + sid);
+		//sio.sockets.sockets[sid].json.send({form:user.username,msg:data.msg});
+		sio.sockets.socket(sid).emit("revice_msg", {form:user.username,msg:data.msg});
+	});
+	socket.on("disconnect", function() {
+		for (var key in sidMap) {
+			if (sidMap[key] = socket.id) {
+				delete sidMap[key];
+				break;
 			}
-			for (var key in data) {
-				handshakeData[key] = data[key];
-			}
-			callback(null, true);
-		});
+		}
+		logger.info("<<<<<<disconnected");
 	});
 });
 
-require("../service/chat.js").createChat(sio.sockets);
+sio.of("/chat").on("connection", function(socket) {
+	socket.emit("a message", {that : "only", "/chat" : "will get"});
+	//chat.emit("a message", {everyone : "in", "/chat" : "will get"});
+});

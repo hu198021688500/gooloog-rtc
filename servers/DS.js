@@ -1,43 +1,40 @@
 /**
  * 分发服务器(Dispatch Server)
+ * node SS.js 127.0.0.1 8001
+ * 业务比较简单，因此负载不会很高
+ * 1.登录首先连接该服务器
+ * 2.返回一个NS的IP给客户端
+ * 3.断开连接
  */
 
-var io = require('socket.io'),
-    express = require('express'),
-    app = express.createServer();
- 
-app.configure(function () {
-    app.use(express.cookieParser());
-    app.use(express.session({secret: 'secret', key: 'express.sid'}));
-    app.use(function (req, res) {
-        res.end('<h2>Hello, your session id is ' + req.sessionID + '</h2>');
-    });
+var util = require("util");
+var protocol = require("../service/protocol.js");
+var systemUtil = require("../modules/util/lib/system.js");
+
+var logger = require("log4js").getLogger(__filename);
+
+if (!systemUtil.checkIsLocalIp(process.argv[2])) {
+	logger.error(process.argv[2] + " is not local ip.");
+	return false;
+}
+
+var sio = require("socket.io").listen(parseInt(process.argv[3]), {"log level" : 0});
+sio.sockets.on("connection", function (socket) {
+	logger.info(">>>>>>connection to DS:" + socket.id);
+	var events = protocol.DS;
+	for (var key in events) {
+		socket.on(key, function (data) {
+			logger.info(key + " get:" + util.inspect(data));
+			var serviceName = util.format("../service/%s.js",events[key]["service"]);
+			var service = require(serviceName);
+			service[events[key]["method"]](data, function(result) {
+				logger.info(key + " return:" + util.inspect(result));
+				sio.sockets.emit(key + "_ok", result);
+				socket.disconnect();
+			});
+		});
+	}
+	socket.on("disconnect", function() {
+		logger.info("<<<<<<disconnected");
+	});
 });
- 
-app.listen();
-var sio = io.listen(app);
- 
-
-
-var net = require('net');
-var analyze = require('./service/analyze.js');
-
-var config = require('./config/config.js');
-var listenAddress = config.DS.address;
-var listenPort = config.DS.port;
-
-net.createServer(function(socket) {
-	var server = listenAddress + ':' + listenPort;
-	var client = socket.remoteAddress + ':' + socket.remotePort;
-	console.log('client[' + client + '] connect DS[' +  server + '] opened');
-    socket.on('data', function(data) {
-    	console.log('client[' + client + '] send DS[' +  server + '] data:' + data);
-    	var object = JSON.parse(data);
-    	analyze.process(socket, object, function(result) {
-    		socket.write(result);
-    	});
-    });
-    socket.on('close', function(data) {
-        console.log('client[' + client + '] connect DS[' +  server + '] closed');
-    });
-}).listen(listenPort, listenAddress);

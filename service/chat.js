@@ -244,4 +244,12 @@ Chat.prototype.get = function(key) {
 	return this.namespace.settings[key];
 };
 
+/**
+ * 
+ * @param {Object} data {GID:"xx@xx.xx"}
+ */
+Chat.prototype.P2P = function(data) {
+	
+};
+
 module.exports = Chat;

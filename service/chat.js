@@ -2,7 +2,7 @@
  * New node file
  */
 
-var EventEmitter = process.EventEmitter, channelPrefix = '#', userPrefix = '@', first = require('first');
+var EventEmitter = process.EventEmitter, channelPrefix = '#', userPrefix = '@';//, first = require('first');
 
 // hack until socket.disconnect is fixed
 function disconnect(socket) {
@@ -21,7 +21,7 @@ function disconnect(socket) {
  * @param {String} namespace [socket.io].sockets
  */
 function Chat(namespace) {
-	var chat = this;
+	/*var chat = this;
 	this.settings = {};
 	this.namespace = namespace;
 
@@ -135,21 +135,17 @@ function Chat(namespace) {
 					});
 		});
 
-	}
-
+	}*/
+	this.client = 1;
 	// 连接
 	namespace.on('connection', function(socket) {
-		var uid = socket.handshake['uid'];
-		if (!uid) {
-			socket.log.warn('no uid given for client', socket.id);
-			return disconnect(socket);
-		}
+		var uid = this.client++;
 		socket.join(userPrefix + uid);
 
-		socket.on('whisper', onWhisper);
-		socket.on('say', onSay);
-		socket.on('join', onChannelJoin);
-		socket.on('leave', onLeave);
+		//socket.on('whisper', onWhisper);
+		//socket.on('say', onSay);
+		//socket.on('join', onChannelJoin);
+		//socket.on('leave', onLeave);
 		// 在socket session中存储uid
 		socket.set('uid', uid, function(err) {
 			if (err) {
@@ -159,12 +155,12 @@ function Chat(namespace) {
 				return;
 			} else {
 				// join lobby
-				onLeave.call(socket, function(err) {
+				/*onLeave.call(socket, function(err) {
 					if (err) {
 						return;
 					}
 					chat.emit('connection', uid);
-				});
+				});*/
 			}
 		});
 

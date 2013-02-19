@@ -1,6 +1,23 @@
 /**
- * 分发服务器
+ * 分发服务器(Dispatch Server)
  */
+
+var io = require('socket.io'),
+    express = require('express'),
+    app = express.createServer();
+ 
+app.configure(function () {
+    app.use(express.cookieParser());
+    app.use(express.session({secret: 'secret', key: 'express.sid'}));
+    app.use(function (req, res) {
+        res.end('<h2>Hello, your session id is ' + req.sessionID + '</h2>');
+    });
+});
+ 
+app.listen();
+var sio = io.listen(app);
+ 
+
 
 var net = require('net');
 var analyze = require('./service/analyze.js');

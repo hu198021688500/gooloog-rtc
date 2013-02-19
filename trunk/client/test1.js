@@ -54,6 +54,38 @@ server.listen(8088, function() {
 //socket.emit("private message", { user: "me", msg: "whazzzup?" });
 
 var io = require("socket.io-client");
+
+var socket = io.connect("192.168.31.188/P2P", {
+    port: 8003
+});
+socket.on("connect", function() {
+	console.log("socket connected");
+	if (!process.argv[2]) {
+		setTimeout(function(){
+			socket.emit("send_msg", { GID:"huguobing2@gooloog.com/mobile", msg:"hello huguobing1", sn:1});
+			console.log("send_msg");
+		}, 5000);
+	}
+	
+	socket.on("send_msg_ok", function(sendMsgData) {
+		console.log(sendMsgData);
+	});
+	socket.on("revice_msg", function(reviceMsgData) {
+		console.log("revice_msg");
+		console.log(reviceMsgData);
+		socket.emit("revice_msg_ok", { GID:"huguobing1@gooloog.com", sn:1});
+	});
+	socket.on("message", function (data) {
+		console.log(data);
+	});
+	socket.on("disconnect", function() {
+		console.log("socket disconnect");
+	});
+});
+	
+/*
+return;
+var io = require("socket.io-client");
 var config = require('../config/config.js');
 
 var socketDS = null;
@@ -113,4 +145,4 @@ function connectSS(ssData) {
 	});
 }
 
-connectDS();
+connectDS();*/

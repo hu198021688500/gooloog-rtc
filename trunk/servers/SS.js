@@ -31,7 +31,7 @@ sio.on("connection", function(socket) {
 	// 接收客户端发来的消息
 	socket.on("send_msg", function(data) {
 		var sid = sidMap[data.TGID];
-		logger.info(data.FGID + "==>" + data.TGID + ":" + data.msg);
+		logger.info(data.FGID + "==>" + data.TGID + "[" + data.msg + "]");
 		// 服务器发回确认
 		socket.emit("send_msg_ok", {FGID:data.FGID, TGID:data.TGID, sn:data.sn});
 		// 转发

@@ -55,33 +55,44 @@ server.listen(8088, function() {
 
 var io = require("socket.io-client");
 
-var socket = io.connect("192.168.31.188/P2P", {
+var socket = io.connect("192.168.31.188", {
     port: 8003
 });
+
+
+function sendMessage(from, to, msg) {
+	setTimeout(function(){
+		socket.emit("send_msg", { FGID:from, TGID:to, msg:msg, sn:msgSN++});
+		console.log("send message to " + to);
+	}, 2000);
+}
+
+var msgSN = 1;
+
 socket.on("connect", function() {
-	console.log("socket connected");
-	if (!process.argv[2]) {
-		setTimeout(function(){
-			socket.emit("send_msg", { GID:"huguobing2@gooloog.com/mobile", msg:"hello huguobing1", sn:1});
-			console.log("send_msg");
-		}, 5000);
-	}
+	setTimeout(function(){
+		sendMessage("huguobing1@gooloog.com", "huguobing2@gooloog.com", 100);
+	}, 5000);
 	
 	socket.on("send_msg_ok", function(sendMsgData) {
-		console.log(sendMsgData);
+		console.log("send message to " + sendMsgData.TGID + " success");
 	});
+	
 	socket.on("revice_msg", function(reviceMsgData) {
-		console.log("revice_msg");
-		console.log(reviceMsgData);
-		socket.emit("revice_msg_ok", { GID:"huguobing1@gooloog.com", sn:1});
+		console.log("recive message form " + reviceMsgData.FGID
+			+ " " + reviceMsgData.sn + ":" + reviceMsgData.msg);
+			
+		socket.emit("revice_msg_ok", {FGID:reviceMsgData.FGID, TGID:reviceMsgData.TGID, sn:reviceMsgData.sn});
+		
+		var msg = parseInt(reviceMsgData.msg) + 1;
+		sendMessage(reviceMsgData.TGID, reviceMsgData.FGID, msg);
 	});
-	socket.on("message", function (data) {
-		console.log(data);
-	});
+	
 	socket.on("disconnect", function() {
 		console.log("socket disconnect");
 	});
 });
+
 	
 /*
 return;

@@ -7,7 +7,7 @@
 var net = require("net");
 
 var config = require("../config/config.js");
-var listenAddress = config.MS.address;
+var listenAddress = config.MS.host;
 var listenPort = config.MS.port;
 
 net.createServer(function(socket) {

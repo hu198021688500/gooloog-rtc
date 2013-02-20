@@ -1,30 +1,30 @@
 exports.DS = {
-	address : '192.168.31.188',
+	host : '192.168.31.188',
 	port : 8001
 };
 
 exports.NS = {
-	address : '192.168.31.188',
-	port : 8087
+	host : '192.168.31.188',
+	port : 8002
 };
 
 exports.SS = {
-	address : '192.168.31.188',
-	port : 8088
+	host : '192.168.31.188',
+	port : 8003
 };
 
 exports.GW = {
-	address : '192.168.31.188',
-	port : 8089
+	host : '192.168.31.188',
+	port : 8004
 };
 
 exports.MS = {
-	address : '192.168.31.188',
-	port : 8090
+	host : '192.168.31.188',
+	port : 8005
 };
 
 exports.DSs = [{
-			address : '192.168.31.188',
+			host : '192.168.31.188',
 			port : 8001
 		}];
 
@@ -34,16 +34,16 @@ exports.NSs = [{
 		}];
 
 exports.SSs = [{
-			address : '192.168.31.188',
-			port : 8088
+			host : '192.168.31.188',
+			port : 8003
 		}];
 
 exports.GWs = [{
-			address : '192.168.31.188',
-			port : 8089
+			host : '192.168.31.188',
+			port : 8004
 		}];
 
 exports.MSs = [{
-			address : '192.168.31.188',
-			port : 8090
+			host : '192.168.31.188',
+			port : 8005
 		}];

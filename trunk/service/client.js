@@ -1,21 +1,50 @@
-var net = require('net');
-var config = require('../config/config.js');
+/**
+ * 
+ */
 
-exports.getNS = function(callback) {
+var config = require("../config/config.js");
+
+/**
+ * 
+ * @param {Function} callback
+ */
+exports.getNS = function(callback){
+	callback(null, config.NS);
+};
+
+/**
+ * 
+ * @param {Function} callback
+ */
+exports.getSS = function(callback){
+	callback(null, config.SS);
+};
+
+/*var net = require("net");
+var config = require("../config/config.js");
+
+exports.getNS1 = function(callback) {
+	callback(null, config.NS);
+	return ;
 	var client = new net.Socket();
-	var server = config.MS.host + ':' + config.MS.port;
-	console.log('DS connect NS[' + server + '] opened');
+	var server = config.MS.host + ":" + config.MS.port;
 	client.connect(config.MS.port, config.MS.host, function() {
-		var data = {cmd : 2};
-		console.log('DS send NS[' + server + '] data: ' + JSON.stringify(data));
 		client.write(JSON.stringify(data));
 	});
-
-	client.on('data', function(data) {
-		var object = JSON.parse(data);
-		console.log('DS receive from NS[' + server + '] data: ' + JSON.stringify(object));
-		callback(null, object);
-		console.log('DS connect to NS[' + server + '] closed');
+	client.on("data", function(data) {
+		callback(null, JSON.parse(data));
 		client.destroy();
 	});
 };
+
+exports.getSS1 = function(callback) {
+	var client = new net.Socket();
+	var server = config.MS.host + ":" + config.MS.port;
+	client.connect(config.MS.port, config.MS.host, function() {
+		client.write("getSS");
+	});
+	client.on("data", function(data) {
+		callback(null, JSON.parse(data));
+		client.destroy();
+	});
+};*/

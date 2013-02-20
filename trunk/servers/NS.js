@@ -7,61 +7,39 @@
  * 3.用户登出之前一直保持着与该服务器的连接
  */
 
-var util = require("util");
-var protocol = require("../service/protocol.js");
-var systemUtil = require("../modules/util/lib/system.js");
-
+var client = require("../service/client.js");
 var logger = require("log4js").getLogger(__filename);
+var systemUtil = require("../modules/util/lib/system.js");
 
 if (!systemUtil.checkIsLocalIp(process.argv[2])) {
 	logger.error(process.argv[2] + " is not local ip.");
 	return false;
 }
-
+/******  由于存在多台NS，因此需要使用共享存储，以下两行的实现是为方便测试而使用 ******/
 var sidMap = {};
 var gidMap = {};
 
 var sio = require("socket.io").listen(parseInt(process.argv[3]), {"log level" : 0});
 sio.sockets.on("connection", function (socket) {
 	logger.info(">>>>>>connection to NS:" + socket.id);
-	socket.on("init_user", function(data) {
+	socket.on("init_NS", function(data) {
 		sidMap[data.GID] = socket.id;
 		gidMap[socket.id] = data.GID;
-		socket.emit("init_user_ok", {});
-		console.log(sidMap);
+		socket.emit("init_NS_ok", 0);
 	});
-	/*var events = protocol.NS;
-	for (var key in events) {
-		socket.on(key, function (data) {
-			logger.info(key + " get:" + util.inspect(data));
-			var serviceName = util.format("../service/%s.js", events[key]["service"]);
-			var service = require(serviceName);
-			console.log(key);
-			service[events[key]["method"]](socket, data, function(result) {
-				logger.info(key + " return:" + util.inspect(result));
-				socket.emit(key + "_ok", result);
-				console.log("emit " + key + "_ok");
-			});
-		});
-	}*/
 	socket.on("chat_P2P", function (data) {
-		var chat = require("../service/chat.js");
-		chat.P2P(data, function(result){
-			logger.info("chat_P2P return:" + util.inspect(result));
+		client.getSS(function(err, result) {
+			result.FGID = data.FGID;
+			result.TGID = data.TGID;
 			socket.emit("chat_P2P_ok", result);
 			var sid = sidMap[result.TGID];
-			
 			sio.sockets.socket(sid).emit("chat_P2P_req", {FGID:result.TGID, TGID:result.FGID, host:"192.168.31.188", port:8003});
-			console.log("emit chat_P2P_ok");
 		});
-	});
-	socket.on("chat_P2P", function(data) {
-		console.log(data);
 	});
 	socket.on("disconnect", function() {
 		var GID = gidMap[socket.id];
 		delete gidMap[socket.id];
 		delete sidMap[GID];
-		logger.info("<<<<<<disconnected");
+		logger.info("<<<<<<" + GID + " disconnected");
 	});
 });

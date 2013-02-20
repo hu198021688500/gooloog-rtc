@@ -3,9 +3,9 @@ var config = require('../config/config.js');
 
 exports.getNS = function(callback) {
 	var client = new net.Socket();
-	var server = config.MS.address + ':' + config.MS.port;
+	var server = config.MS.host + ':' + config.MS.port;
 	console.log('DS connect NS[' + server + '] opened');
-	client.connect(config.MS.port, config.MS.address, function() {
+	client.connect(config.MS.port, config.MS.host, function() {
 		var data = {cmd : 2};
 		console.log('DS send NS[' + server + '] data: ' + JSON.stringify(data));
 		client.write(JSON.stringify(data));

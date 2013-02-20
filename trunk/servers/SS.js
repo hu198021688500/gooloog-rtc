@@ -16,17 +16,21 @@ if (!systemUtil.checkIsLocalIp(argv[2])) {
 var sio = require("socket.io").listen(parseInt(argv[3]), {"log level" : 0});
 
 var sidMap = {};
-var index = 1;
+var gidMap = {};
 
 // 点对点聊天
 sio.on("connection", function(socket) {
-	sidMap["huguobing" + index + "@gooloog.com"] = socket.id;
-	index++;
-	console.log(sidMap);
+	socket.on("init_user", function(data) {
+		sidMap[data.GID] = socket.id;
+		gidMap[socket.id] = data.GID;
+		socket.emit("init_user_ok", {});
+		console.log(sidMap);
+	});
 	
 	socket.on("send_msg", function(data) {
 		var sid = sidMap[data.TGID];
-		
+		console.log(data.TGID);
+		console.log(sidMap);
 		console.log("server send from " + data.FGID + "[" + socket.id + "]");
 		console.log("server send to " + data.TGID + "[" + sid + "]");
 		console.log("server send msg:" + data.msg);
@@ -35,13 +39,11 @@ sio.on("connection", function(socket) {
 		sio.sockets.socket(sid).emit("revice_msg", {FGID:data.FGID, TGID:data.TGID, msg:data.msg, sn:data.sn});
 		socket.emit("revice_msg_ok", {FGID:data.FGID, TGID:data.TGID, sn:data.sn});
 	});
+	
 	socket.on("disconnect", function() {
-		for (var key in sidMap) {
-			if (sidMap[key] = socket.id) {
-				delete sidMap[key];
-				break;
-			}
-		}
+		var GID = gidMap[socket.id];
+		delete gidMap[socket.id];
+		delete sidMap[GID];
 		logger.info("<<<<<<disconnected");
 	});
 });
@@ -61,7 +63,7 @@ sio.of("/chat").on("connection", function(socket) {
 		socket.get('room', function(err, room) {
 			// neither method works for me
 			socket.broadcast.to(room).emit('new fan');
-			io.sockets.in(room).emit('new non-fan');
+			//io.sockets.in(room).emit('new non-fan');
 		});
 	});
 });

@@ -11,3 +11,11 @@
 exports.sendUser = function(data) {
 	
 };
+
+/**
+ * 消息存储
+ * @param {Object} data
+ */
+exports.store = function(data){
+	
+};

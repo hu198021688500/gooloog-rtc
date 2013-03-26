@@ -10,6 +10,13 @@
 var logger = require("log4js").getLogger(__filename);
 var systemUtil = require("../modules/util/lib/system.js");
 
+//日志
+var logger = require("tracer").dailyfile({
+	root : path.normalize(__dirname + "/../logs"),
+	dateformat : "HH:MM:ss.L",
+	format : "{{timestamp}} {{message}}"
+});
+
 if (!systemUtil.checkIsLocalIp(process.argv[2])) {
 	logger.error(process.argv[2] + " is not local ip.");
 	return false;

@@ -1,5 +1,9 @@
 {
 	"session" : {
 		"secret" : "yourbestsecret"
+	},
+	"logs" : "/tmp",
+	"DS" : {
+		"port" : 8001
 	}
 }

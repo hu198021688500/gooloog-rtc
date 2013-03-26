@@ -7,22 +7,16 @@
  * 3.断开连接
  */
 
-var logger = require("log4js").getLogger(__filename);
-var systemUtil = require("../modules/util/lib/system.js");
+var config = require("../conf/config.json");
 
 //日志
 var logger = require("tracer").dailyfile({
-	root : path.normalize(__dirname + "/../logs"),
+	root : config.logs,
 	dateformat : "HH:MM:ss.L",
 	format : "{{timestamp}} {{message}}"
 });
 
-if (!systemUtil.checkIsLocalIp(process.argv[2])) {
-	logger.error(process.argv[2] + " is not local ip.");
-	return false;
-}
-
-var sio = require("socket.io").listen(parseInt(process.argv[3]), {"log level" : 0});
+var sio = require("socket.io").listen(config.DS.port, {"log level" : 0});
 sio.sockets.on("connection", function (socket) {
 	logger.info(">>>>>>connection to DS:" + socket.id);
 	socket.on("login", function (data) {

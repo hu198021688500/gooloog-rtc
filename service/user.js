@@ -2,8 +2,7 @@
  * 用户模块
  */
 
-var userModel = require("../modules/user/index.js");
-var user = new userModel();
+var user = new (require("../modules/user/index.js").user)();
 
 /**
  * 用户登录
@@ -29,7 +28,14 @@ exports.login1 = function(data, callback){
  * @param {Function} callback
  */
 exports.register = function(params, callback) {
-	var fields = ["email", "password"];
+	if (!params.email || !params.password) {
+		return callback(new Error("email or password is empty."));
+	}
+	var data = {
+		email : params.email,
+		password : params.password
+	};
+	user.add(data, callback);
 };
 
 /**
@@ -38,7 +44,10 @@ exports.register = function(params, callback) {
  * @param {Function} callback
  */
 exports.login = function(params, callback) {
-
+	if (!params.email || !params.password) {
+		return callback(new Error("email or password is empty."));
+	}
+	user.login(params.email, params.password, callback);
 };
 
 /**
@@ -47,5 +56,17 @@ exports.login = function(params, callback) {
  * @param {Function} callback
  */
 exports.getDetail = function(params, callback) {
+	if (!params.uid) {
+		return callback(new Error("uid is empty."));
+	}
+	user.getDetail(params.uid, callback);
+};
 
+/**
+ * 更新信息
+ * @param {Array} params
+ * @param {Function} callback
+ */
+exports.update = function(params, callback) {
+	user.update(params.uid, params, callback);
 };

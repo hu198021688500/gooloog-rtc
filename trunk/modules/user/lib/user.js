@@ -12,8 +12,7 @@ var User = function() {
 		uid : "user:h:%s",
 		email : "user:email"
 	};
-	this.userFields = ["email", "password", "nick", "sex", "birthday",
-			"avatar", "signature"];
+	
 	/**
 	 * 生成用户唯一ID
 	 * @param {Function} callback
@@ -28,9 +27,20 @@ var User = function() {
 	 * @param {Function} callback
 	 */
 	this.add = function(data, callback) {
-		var _this = this, info = {};
-		for (var key in this.userFields) {
-			info[this.userFields[key]] = data[this.userFields[key]] || "";
+		var _this = this;
+		var info = {
+			"email" : "",
+			"password" : "",
+			"nick" : "",
+			"sex" : 0,
+			"birthday" : "",
+			"avatar" : "",
+			"signature" : ""
+		};
+		for (var key in info) {
+			if (data[key]) {
+				info[key] = data[key];
+			}
 		}
 		redisClient.hget(_this.keys.email, info.email, function(err, result) {
 			if (!err && result) {
@@ -100,15 +110,16 @@ var User = function() {
 	 * @param {Function} callback
 	 */
 	this.update = function(uid, data, callback) {
+		var userFields = ["email", "password", "nick", "sex", "birthday",
+				"avatar", "signature"];
 		for (var key in data) {
-			if (!this.inArray(key, this.userFields)) {
+			if (!this.inArray(key, userFields)) {
 				delete data[key];
 			}
 		}
 		if (data.length == 0) {
 			return callback(new Error("data is empty."));
 		}
-		console.log(data);
 		var hKey = util.format(this.keys.uid, uid);
 		redisClient.hmset(hKey, data, callback);
 	};

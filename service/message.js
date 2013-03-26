@@ -19,3 +19,11 @@ exports.sendUser = function(data) {
 exports.store = function(data){
 	
 };
+
+/**
+ * 离线消息
+ * @param {String} GID
+ */
+exports.offline = function(GID) {
+	
+};

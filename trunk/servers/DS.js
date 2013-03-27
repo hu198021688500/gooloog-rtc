@@ -9,24 +9,23 @@
 
 var config = require("../conf/config.json");
 
-//日志
 var logger = require("tracer").dailyfile({
 	root : config.logs,
 	dateformat : "HH:MM:ss.L",
 	format : "{{timestamp}} {{message}}"
 });
 
-var sio = require("socket.io").listen(config.DS.port, {"log level" : 0});
-sio.sockets.on("connection", function (socket) {
-	logger.info(">>>>>>connection to DS:" + socket.id);
-	socket.on("login", function (data) {
-		var user = require("../service/user.js");
-		user.login(data, function(result) {
-			sio.sockets.emit("login_ok", result);
-			socket.disconnect();
-		});
-	});
-	socket.on("disconnect", function() {
-		logger.info("<<<<<<disconnected");
-	});
-});
+var net = require("net");
+
+net.createServer(function(sock) {
+	console.log(sock);
+    console.log("CONNECTED: " + sock.remoteAddress +":"+ sock.remotePort);
+    sock.on("data", function(data) {
+        console.log("DATA " + sock.remoteAddress + ": " + data);
+        sock.write("You said " + data + "");
+    });
+    
+    sock.on("close", function(data) {
+        console.log("CLOSED: " + sock.remoteAddress +" "+ sock.remotePort);
+    });
+}).listen(config.DS.port, config.DS.host);

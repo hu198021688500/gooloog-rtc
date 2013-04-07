@@ -33,3 +33,11 @@ pro.generateId = function() {
 	}
 	return rand.toString('base64').replace(/\//g, '_').replace(/\+/g, '-');
 };
+
+/**
+ * 
+ * @param {String} guid abc123@123.com/an
+ */
+pro.authorize = function(guid) {
+	
+};

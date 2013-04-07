@@ -69,10 +69,3 @@ pro.getDeviceByStr = function(device) {
 	}
 	return deviceNumber;
 };
-
-try {
-	var x = new userUtil();
-	console.log(x.getDeviceByGUID("huguobing@gooloog.com/web"));
-} catch (e) {
-	console.log(e);
-}

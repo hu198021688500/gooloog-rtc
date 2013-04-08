@@ -7,7 +7,7 @@ var userUtil = function() {
 		web : 1,
 		client : 2,
 		android : 3,
-		ios : 4
+		iphone : 4
 	};
 };
 
@@ -26,7 +26,7 @@ pro.decodeGUID = function(guid) {
 		domain : null,
 		device : null
 	};
-	var patt = new RegExp(/^[\d\w]+@[\d\w\.]+\/\w+$/ig);
+	var patt = new RegExp(/^[\d\w]+@[\d\w\.]+\/[\w\d]+$/ig);
 	if (patt.test(guid)) {
 		var pos1 = guid.indexOf("@");
 		var pos2 = guid.indexOf("/", pos1 + 1);
@@ -45,10 +45,19 @@ pro.decodeGUID = function(guid) {
 pro.getDeviceByGUID = function(guid) {
 	var deviceNumber = 0;
 	var guidObj = this.decodeGUID(guid);
-	for (var key in this.devices) {
-		if (key == guidObj.device) {
-			deviceNumber = this.devices[key];
-			break;
+	if (isNaN(guidObj.device)) {
+		for (var key in this.devices) {
+			if (key == guidObj.device) {
+				deviceNumber = this.devices[key];
+				break;
+			}
+		}
+	} else {
+		for (var key in this.devices) {
+			if (this.devices[key] == guidObj.device) {
+				deviceNumber = this.devices[key];
+				break;
+			}
 		}
 	}
 	return deviceNumber;

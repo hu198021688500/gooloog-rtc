@@ -7,7 +7,8 @@
  * 3.断开连接
  */
 
-var config = require("../conf/config.json");
+var net = require("net"),
+	systemUtil = require("../modules/util/lib/system.js");
 
 var logger = require("tracer").dailyfile({
 	root : config.logs,
@@ -15,11 +16,26 @@ var logger = require("tracer").dailyfile({
 	format : "{{timestamp}} {{message}}"
 });
 
-var net = require("net");
+var host = null,
+	port = null,
+	defaultHost = "127.0.0.1",
+	defaultPort = 8001;
+	
+if (process.argv[3]) {
+	host = process.argv[2];
+	port = process.argv[3];
+} else {
+	host = defaultHost;
+	port = defaultPort;
+}
 
+if (!systemUtil.checkIsLocalIp(host)) {
+	return logger.error(process.argv[2] + " is not local ip.");
+}
+
+var connNum = 0;
 net.createServer(function(sock) {
-	console.log(sock);
-    console.log("CONNECTED: " + sock.remoteAddress +":"+ sock.remotePort);
+	new Client(connNum, sock);
     sock.on("data", function(data) {
         console.log("DATA " + sock.remoteAddress + ": " + data);
         sock.write("You said " + data + "");
@@ -28,4 +44,4 @@ net.createServer(function(sock) {
     sock.on("close", function(data) {
         console.log("CLOSED: " + sock.remoteAddress +" "+ sock.remotePort);
     });
-}).listen(config.DS.port, config.DS.host);
+}).listen(port, host);
